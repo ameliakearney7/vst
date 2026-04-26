@@ -3,5 +3,6 @@ Please make a copy of the prompt text below and fill in the blank with something
 —references to the style or features of existing plugins
 —lists of 
 
-
 Create a raving, mad-scientist-toned, all-caps manifesto about a new digital delay, chorus, and flanger plugin that had a drawing of my dog with a ball.  Sprinkle detailed transcriptions of involuntary cackling throughout.
+
+This is my first change to this file.
