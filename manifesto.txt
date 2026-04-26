@@ -9,3 +9,5 @@ WOOFER has been manifested. Key design choices for the deranged dog-scientist ae
 The plugin UI shows the mascot Biscuit himself — golden retriever, furrowed mad-scientist brows, tongue out, clutching a ball with chaotic enthusiasm. The LEDs, scope display, and infinity-labeled knobs complete the "definitely functional, possibly cursed" plugin panel.
 
 The cackle transcriptions escalate appropriately: from a modest `heh heh heh` through full-volume `HAHAHAHAAA`, punctuated by *chair scraping* and *something falling off desk*. The **Biscuit Mode** feature is listed without further explanation, as it should be.
+
+This is my first change to this file.
