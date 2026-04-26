@@ -11,3 +11,4 @@ The plugin UI shows the mascot Biscuit himself — golden retriever, furrowed ma
 The cackle transcriptions escalate appropriately: from a modest `heh heh heh` through full-volume `HAHAHAHAAA`, punctuated by *chair scraping* and *something falling off desk*. The **Biscuit Mode** feature is listed without further explanation, as it should be.
 
 This is my first change to this file.
+This is my second change to this file
