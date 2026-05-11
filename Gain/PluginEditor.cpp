@@ -39,6 +39,40 @@ void GainAudioProcessorEditor::paint (juce::Graphics& g)
                   xDest,
                   yDest);
     g.drawImageTransformed(myImage, transform);
+
+    mGainControlSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
+    mGainControlSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
+  
+    mGainControlSlider.onValueChange = [this]
+    {
+        processor.getParameters().getUnchecked(0)->setValueNotifyingHost(
+            mGainControlSlider.getValue());
+    };
+    
+    auto& params = processor.getParameters();
+
+    auto* gainParameter =
+        dynamic_cast<juce::AudioParameterFloat*>(
+            params.getUnchecked(0));
+    
+    mGainControlSlider.onDragStart = [gainParameter] {
+            gainParameter->beginChangeGesture();
+        };
+        
+        mGainControlSlider.onValueChange = [this, gainParameter] {
+        *gainParameter = mGainControlSlider.getValue();
+        };
+        
+        mGainControlSlider.onDragEnd = [gainParameter] {
+            gainParameter->endChangeGesture();
+        };
+
+
+    addAndMakeVisible(mGainControlSlider);
+    
+    mGainControlSlider.setRange(gainParameter->range.start, gainParameter->range.end);
+    
+    mGainControlSlider.setBounds(0, 0, 100, 100);
     
     //g.setColour (juce::Colours::white);
     //g.setFont (juce::FontOptions (15.0f));

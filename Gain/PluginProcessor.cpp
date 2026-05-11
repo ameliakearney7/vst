@@ -144,6 +144,15 @@ bool GainAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
 
 void GainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    float* channelLeft = buffer.getWritePointer(0);
+    float* channelRight = buffer.getWritePointer(1);
+
+    for (int sample = 0; sample < buffer.getNumSamples(); sample++)
+            {
+                mGainSmoothed = mGainSmoothed - 0.004 * (mGainSmoothed - mGainParameter->get());
+                channelLeft[sample] *= mGainSmoothed;
+                channelRight[sample] *= mGainSmoothed;
+            }
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -177,7 +186,7 @@ void GainAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
 //==============================================================================
 bool GainAudioProcessor::hasEditor() const
 {
-    return false; // (change this to false if you choose to not supply an editor)
+    return true; // (change this to false if you choose to not supply an editor)
 }
 
 juce::AudioProcessorEditor* GainAudioProcessor::createEditor()

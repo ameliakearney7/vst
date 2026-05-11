@@ -30,6 +30,7 @@ private:
     GainAudioProcessor& audioProcessor;
     
     juce:: Image myImage;
+    juce::Slider mGainControlSlider;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GainAudioProcessorEditor)
 };

@@ -57,4 +57,5 @@ private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GainAudioProcessor)
     juce::AudioParameterFloat* mGainParameter;
+    float mGainSmoothed = 1.0f;
 };
