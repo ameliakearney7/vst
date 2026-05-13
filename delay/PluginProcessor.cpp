@@ -27,6 +27,9 @@ DelayAudioProcessor::DelayAudioProcessor()
     mCircularBufferWriteHead = 0;
     mCircularBufferLeft = nullptr;
     mCircularBufferRight = nullptr;
+    
+    mDelayTimeInSamples = 0;
+    mCircularBufferReadHead = 0;
 }
 
 DelayAudioProcessor::~DelayAudioProcessor()
@@ -107,8 +110,10 @@ void DelayAudioProcessor::changeProgramName (int index, const juce::String& newN
 //==============================================================================
 void DelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    
     mCircularBufferWriteHead = 0;
     mCircularBufferLength = sampleRate * MAX_DELAY_TIME;
+    mDelayTimeInSamples = sampleRate * 0.5;
     
     if (mCircularBufferLeft == nullptr) {
         mCircularBufferLeft = new float [mCircularBufferLength]();
@@ -158,6 +163,11 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+    
+    mCircularBufferReadHead = mCircularBufferWriteHead - mDelayTimeInSamples;
+    if (mCircularBufferReadHead < 0) {
+               mCircularBufferReadHead += mCircularBufferLength;
+           }
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -172,9 +182,13 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     float* rightChannel = buffer.getWritePointer(1);
     
     for (int i = 0; i < buffer.getNumSamples(); i++) {
+        buffer.addSample(0, i, mCircularBufferLeft[(int)mCircularBufferReadHead]);
+        buffer.addSample(1, i, mCircularBufferRight[(int)mCircularBufferReadHead]);
+        
         mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i];
         mCircularBufferRight[mCircularBufferWriteHead] = rightChannel[i];
         mCircularBufferWriteHead++;
+    
     }
                 if (mCircularBufferWriteHead >= mCircularBufferLength) {
                     mCircularBufferWriteHead = 0;

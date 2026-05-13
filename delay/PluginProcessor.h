@@ -61,6 +61,9 @@ private:
         float* mCircularBufferRight;
         int mCircularBufferWriteHead;
     
+        float mDelayTimeInSamples; // the m prefix tells us this variable lives on the class instance, not in a method
+        float mCircularBufferReadHead;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayAudioProcessor)
 };
 
