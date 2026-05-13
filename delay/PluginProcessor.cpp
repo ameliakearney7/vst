@@ -23,6 +23,8 @@ DelayAudioProcessor::DelayAudioProcessor()
 
 #endif
 {
+    mCircularBufferLength = 0;
+    mCircularBufferWriteHead = 0;
     mCircularBufferLeft = nullptr;
     mCircularBufferRight = nullptr;
 }
@@ -105,14 +107,19 @@ void DelayAudioProcessor::changeProgramName (int index, const juce::String& newN
 //==============================================================================
 void DelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    mCircularBufferWriteHead = 0;
+    mCircularBufferLength = sampleRate * MAX_DELAY_TIME;
+    
     if (mCircularBufferLeft == nullptr) {
-        mCircularBufferLeft = new float [(int)(sampleRate * MAX_DELAY_TIME)](); // trailing parens initialize as zeros
+        mCircularBufferLeft = new float [mCircularBufferLength]();
     }
     
     if (mCircularBufferRight == nullptr) {
-        mCircularBufferRight = new float [(int)(sampleRate * MAX_DELAY_TIME)](); // trailing parens initialize as zeros
+        mCircularBufferRight = new float [mCircularBufferLength]();
     }
+    
 }
+
 
 void DelayAudioProcessor::releaseResources()
 {
@@ -160,6 +167,18 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+    
+    float* leftChannel = buffer.getWritePointer(0);
+    float* rightChannel = buffer.getWritePointer(1);
+    
+    for (int i = 0; i < buffer.getNumSamples(); i++) {
+        mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i];
+        mCircularBufferRight[mCircularBufferWriteHead] = rightChannel[i];
+        mCircularBufferWriteHead++;
+    }
+                if (mCircularBufferWriteHead >= mCircularBufferLength) {
+                    mCircularBufferWriteHead = 0;
+                }
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...

@@ -24,6 +24,7 @@ public:
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    int mCircularBufferLength;
     void releaseResources() override;
 
    #ifndef JucePlugin_PreferredChannelConfigurations
@@ -58,8 +59,8 @@ public:
 private:
         float* mCircularBufferLeft;
         float* mCircularBufferRight;
-private:
-    //==============================================================================
+        int mCircularBufferWriteHead;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayAudioProcessor)
 };
 
