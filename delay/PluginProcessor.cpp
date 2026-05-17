@@ -23,10 +23,10 @@ DelayAudioProcessor::DelayAudioProcessor()
 
 #endif
 {
-    mCircularBufferLength = 0;
-    mCircularBufferWriteHead = 0;
     mCircularBufferLeft = nullptr;
     mCircularBufferRight = nullptr;
+    mCircularBufferLength = 0;
+    mCircularBufferWriteHead = 0;
     
     mDelayTimeInSamples = 0;
     mCircularBufferReadHead = 0;
@@ -163,11 +163,6 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-    
-    mCircularBufferReadHead = mCircularBufferWriteHead - mDelayTimeInSamples;
-    if (mCircularBufferReadHead < 0) {
-               mCircularBufferReadHead += mCircularBufferLength;
-           }
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -181,18 +176,42 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     float* leftChannel = buffer.getWritePointer(0);
     float* rightChannel = buffer.getWritePointer(1);
     
-    for (int i = 0; i < buffer.getNumSamples(); i++) {
-        buffer.addSample(0, i, mCircularBufferLeft[(int)mCircularBufferReadHead]);
-        buffer.addSample(1, i, mCircularBufferRight[(int)mCircularBufferReadHead]);
-        
-        mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i];
-        mCircularBufferRight[mCircularBufferWriteHead] = rightChannel[i];
+    for (int i = 0; i < buffer.getNumSamples(); i++)
+    {
+        float dryLeft = leftChannel[i];
+        float dryRight = rightChannel[i];
+
+        // read head calculation
+        mCircularBufferReadHead = mCircularBufferWriteHead - mDelayTimeInSamples;
+
+        if (mCircularBufferReadHead < 0)
+            mCircularBufferReadHead += mCircularBufferLength;
+
+        int readIndex = (int)mCircularBufferReadHead;
+
+        float delayedSampleLeft = mCircularBufferLeft[readIndex];
+        float delayedSampleRight = mCircularBufferRight[readIndex];
+
+        // mix output (IMPORTANT: write, don't addSample)
+        float mix = 0.5f;
+        float feedback = 0.3f;
+
+        buffer.setSample(0, i, dryLeft + delayedSampleLeft * mix);
+        buffer.setSample(1, i, dryRight + delayedSampleRight * mix);
+
+        // write into delay buffer WITH feedback control
+        mCircularBufferLeft[mCircularBufferWriteHead] =
+            dryLeft + delayedSampleLeft * feedback;
+
+        mCircularBufferRight[mCircularBufferWriteHead] =
+            dryRight + delayedSampleRight * feedback;
+
+        // advance write head
         mCircularBufferWriteHead++;
-    
+
+        if (mCircularBufferWriteHead >= mCircularBufferLength)
+            mCircularBufferWriteHead = 0;
     }
-                if (mCircularBufferWriteHead >= mCircularBufferLength) {
-                    mCircularBufferWriteHead = 0;
-                }
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -202,7 +221,7 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     // interleaved by keeping the same state.
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
+        auto* ChannelData = buffer.getWritePointer (channel);
 
         // ..do something to the data...
     }
