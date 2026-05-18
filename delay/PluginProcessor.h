@@ -64,6 +64,10 @@ private:
         float mDelayTimeInSamples; // the m prefix tells us this variable lives on the class instance, not in a method
         float mCircularBufferReadHead;
     
+        float mFeedbackLeft;
+        float mFeedbackRight;
+    
+        float mDryWet;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayAudioProcessor)
 };
 
