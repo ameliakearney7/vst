@@ -68,6 +68,11 @@ private:
         float mFeedbackRight;
     
         float mDryWet;
+    
+        juce::AudioParameterFloat* mDryWetParameter;
+        juce::AudioParameterFloat* mFeedbackParameter;
+        juce::AudioParameterFloat* mDelayTimeParameter;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayAudioProcessor)
 };
 
