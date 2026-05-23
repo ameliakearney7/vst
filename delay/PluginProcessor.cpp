@@ -40,6 +40,8 @@ DelayAudioProcessor::DelayAudioProcessor()
     addParameter(mDryWetParameter = new juce::AudioParameterFloat({"drywet", 1}, "Dry Wet", 0, 1.0, 0.5));
     addParameter(mFeedbackParameter = new juce::AudioParameterFloat({"feedback", 1}, "Feedback", 0, 0.98, 0.5));
     addParameter(mDelayTimeParameter = new juce::AudioParameterFloat({"delaytime", 1}, "Delay Time", 0.01, MAX_DELAY_TIME, 0.5));
+    
+    mDelayTimeSmoothed = 0;
 }
 
 DelayAudioProcessor::~DelayAudioProcessor()
@@ -133,6 +135,8 @@ void DelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
         mCircularBufferRight = new float [mCircularBufferLength]();
     }
     
+    mDelayTimeSmoothed = *mDelayTimeParameter;
+    
 }
 
 
@@ -174,12 +178,6 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
@@ -187,9 +185,9 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     float* rightChannel = buffer.getWritePointer(1);
     
     mDelayTimeInSamples = getSampleRate() * 0.5;
+    mDelayTimeSmoothed = mDelayTimeSmoothed - 0.001 * (mDelayTimeSmoothed - *mDelayTimeParameter);
     mDelayTimeInSamples = getSampleRate() * *mDelayTimeParameter;
 
-    
     for (int i = 0; i < buffer.getNumSamples(); i++)
     {
         // read head calculation
