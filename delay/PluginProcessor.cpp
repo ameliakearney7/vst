@@ -197,10 +197,18 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
 
         if (mCircularBufferReadHead < 0)
             mCircularBufferReadHead += mCircularBufferLength;
+        
+        int readHead_x = (int)mCircularBufferReadHead;
+        int readHead_x1 = readHead_x + 1;
+        float readHeadFloat = mCircularBufferReadHead - readHead_x;
 
-        float delay_sample_left = mCircularBufferLeft[(int)mCircularBufferReadHead];
-        float delay_sample_right = mCircularBufferRight[(int)mCircularBufferReadHead];
-        // mix output (IMPORTANT: write, don't addSample)
+        // add this in case readHead_x + 1 needs to wrap around the circular buffer to the start
+        if (readHead_x1 >= mCircularBufferLength) {
+        readHead_x1 -= mCircularBufferLength;
+        }
+        
+        float delay_sample_left = lin_interp(mCircularBufferLeft[readHead_x], mCircularBufferLeft[readHead_x1], readHeadFloat);
+        float delay_sample_right = lin_interp(mCircularBufferRight[readHead_x], mCircularBufferRight[readHead_x1], readHeadFloat);
         
         mFeedbackLeft = delay_sample_left * *mFeedbackParameter;
         mFeedbackRight = delay_sample_right * *mFeedbackParameter;
@@ -257,4 +265,9 @@ void DelayAudioProcessor::setStateInformation (const void* data, int sizeInBytes
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DelayAudioProcessor();
+}
+
+float DelayAudioProcessor::lin_interp(float sample_x, float sample_x1, float inPhase)
+{
+    return (1 - inPhase) * sample_x + inPhase * sample_x1; // maybe looks familiar from dry/wet math...
 }

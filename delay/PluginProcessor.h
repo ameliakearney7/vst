@@ -55,6 +55,8 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    float lin_interp(float sample_x, float sample_x1, float inPhase);
 
 private:
         float* mCircularBufferLeft;
