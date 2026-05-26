@@ -34,9 +34,7 @@ DelayAudioProcessor::DelayAudioProcessor()
     
     mFeedbackLeft = 0;
     mFeedbackRight = 0;
-    
-    mDryWet = 0.5;
-    
+        
     addParameter(mDryWetParameter = new juce::AudioParameterFloat({"drywet", 1}, "Dry Wet", 0, 1.0, 0.5));
     addParameter(mFeedbackParameter = new juce::AudioParameterFloat({"feedback", 1}, "Feedback", 0, 0.98, 0.5));
     addParameter(mDelayTimeParameter = new juce::AudioParameterFloat({"delaytime", 1}, "Delay Time", 0.01, MAX_DELAY_TIME, 0.5));
@@ -184,14 +182,14 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     float* leftChannel = buffer.getWritePointer(0);
     float* rightChannel = buffer.getWritePointer(1);
     
-    mDelayTimeInSamples = getSampleRate() * 0.5;
     mDelayTimeSmoothed = mDelayTimeSmoothed - 0.001 * (mDelayTimeSmoothed - *mDelayTimeParameter);
-    mDelayTimeInSamples = getSampleRate() * *mDelayTimeParameter;
 
     for (int i = 0; i < buffer.getNumSamples(); i++)
     {
         // read head calculation
         mCircularBufferReadHead = mCircularBufferWriteHead - mDelayTimeInSamples;
+        
+        mDelayTimeInSamples = getSampleRate() * *mDelayTimeParameter;
 
         if (mCircularBufferReadHead < 0)
             mCircularBufferReadHead += mCircularBufferLength;
@@ -211,8 +209,8 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
         mFeedbackLeft = delay_sample_left * *mFeedbackParameter;
         mFeedbackRight = delay_sample_right * *mFeedbackParameter;
 
-        buffer.setSample(0, i, buffer.getSample(0, i) * (1 - mDryWet) + delay_sample_left * mDryWet);
-        buffer.setSample(1, i, buffer.getSample(1, i) * (1 - mDryWet) + delay_sample_right * mDryWet);
+        buffer.setSample(0, i, buffer.getSample(0, i) * (1 - *mDryWetParameter) + delay_sample_left * *mDryWetParameter);
+        buffer.setSample(1, i, buffer.getSample(1, i) * (1 - *mDryWetParameter) + delay_sample_right * *mDryWetParameter);
         // write into delay buffer WITH feedback control
         
         mCircularBufferLeft[mCircularBufferWriteHead] = leftChannel[i] + mFeedbackLeft;
@@ -223,6 +221,7 @@ void DelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
 
         if (mCircularBufferWriteHead >= mCircularBufferLength)
             mCircularBufferWriteHead = 0;
+        
     }
 
     // This is the place where you'd normally do the guts of your plugin's
