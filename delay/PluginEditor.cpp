@@ -16,6 +16,10 @@ DelayAudioProcessorEditor::DelayAudioProcessorEditor (DelayAudioProcessor& p)
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 300);
+    myImage = juce::ImageCache::getFromMemory(
+        BinaryData::Neville_jpeg,
+        BinaryData::Neville_jpegSize
+        );
     
     auto& params = processor.getParameters();
 
@@ -75,6 +79,25 @@ void DelayAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawFittedText ("Dry/Wet",   0,   100, 100, 20, juce::Justification::centred, 1);
     g.drawFittedText ("Feedback",  100, 100, 100, 20, juce::Justification::centred, 1);
     g.drawFittedText ("Delay Time",200, 100, 100, 20, juce::Justification::centred, 1);
+    
+    g.setColour (juce::Colours::white);
+    g.setFont (juce::Font (30.0f, juce::Font::bold));
+
+    g.drawText (
+        "Amelia's Plug-In!",
+        130, 180, 240, 60,
+        juce::Justification::centredLeft,
+        true
+    );
+    
+    const int xDest = 20;
+    const int yDest = 150;
+    auto transform = juce::AffineTransform::scale (0.03f, 0.03f)
+        .translated(xDest, yDest)
+        .rotated (0.0f, xDest, yDest);
+
+    g.drawImageTransformed(myImage, transform);
+    
 }
 
 void DelayAudioProcessorEditor::resized()

@@ -32,6 +32,8 @@ private:
     juce::Slider mDryWetSlider;
     juce::Slider mFeedbackSlider;
     juce::Slider mDelayTimeSlider;
+    
+    juce::Image myImage;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayAudioProcessorEditor)
 };
