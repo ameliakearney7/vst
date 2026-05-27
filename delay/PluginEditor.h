@@ -12,8 +12,6 @@
 #include "PluginProcessor.h"
 
 //==============================================================================
-/**
-*/
 class DelayAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
@@ -25,14 +23,16 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    // Reference to the processor so the editor can read/write parameters
+    // This is required for UI ↔ audio engine communication
     DelayAudioProcessor& audioProcessor;
-   
+
+    // UI sliders controlling plugin parameters
     juce::Slider mDryWetSlider;
     juce::Slider mFeedbackSlider;
     juce::Slider mDelayTimeSlider;
-    
+
+    // Image displayed in the plugin UI (loaded from BinaryData in .cpp)
     juce::Image myImage;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayAudioProcessorEditor)

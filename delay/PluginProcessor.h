@@ -10,11 +10,10 @@
 
 #include <JuceHeader.h>
 
-#define MAX_DELAY_TIME 2 //  seconds
+// Maximum delay time in seconds (used to size circular buffer)
+#define MAX_DELAY_TIME 2
 
 //==============================================================================
-/**
-*/
 class DelayAudioProcessor  : public juce::AudioProcessor
 {
 public:
@@ -24,7 +23,10 @@ public:
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+
+    // Total length of circular buffer in samples (depends on sample rate)
     int mCircularBufferLength;
+
     void releaseResources() override;
 
    #ifndef JucePlugin_PreferredChannelConfigurations
@@ -55,26 +57,35 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    
+
+    // Linear interpolation helper used for smooth delay reading
     float lin_interp(float sample_x, float sample_x1, float inPhase);
 
 private:
-        float* mCircularBufferLeft;
-        float* mCircularBufferRight;
-        int mCircularBufferWriteHead;
-    
-        float mDelayTimeInSamples; // the m prefix tells us this variable lives on the class instance, not in a method
-        float mCircularBufferReadHead;
-    
-        float mFeedbackLeft;
-        float mFeedbackRight;
-    
-        float mDelayTimeSmoothed;
-    
-        juce::AudioParameterFloat* mDryWetParameter;
-        juce::AudioParameterFloat* mFeedbackParameter;
-        juce::AudioParameterFloat* mDelayTimeParameter;
-    
+    // Circular buffer (delay line storage)
+    float* mCircularBufferLeft;
+    float* mCircularBufferRight;
+
+    // Write head index into circular buffer
+    int mCircularBufferWriteHead;
+
+    // Delay time in samples (computed from parameter + sample rate)
+    float mDelayTimeInSamples;
+
+    // Read head position in circular buffer (fractional for interpolation)
+    float mCircularBufferReadHead;
+
+    // Feedback signals (left/right channels)
+    float mFeedbackLeft;
+    float mFeedbackRight;
+
+    // Smoothed delay time to prevent parameter jitter artifacts
+    float mDelayTimeSmoothed;
+
+    // Plugin parameters (automatable in DAW)
+    juce::AudioParameterFloat* mDryWetParameter;
+    juce::AudioParameterFloat* mFeedbackParameter;
+    juce::AudioParameterFloat* mDelayTimeParameter;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DelayAudioProcessor)
 };
-
